@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore Previdenza Complementare Professionale v2.0</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(145deg, #f0f4f8 0%, #e6ecf3 100%);
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 40px;
+            background: linear-gradient(145deg, #0f3b5e, #1a5f7a);
+            color: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0, 20, 40, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            max-width: 1000px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+        
+        .app-container {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+        
+        .input-section {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+        }
+
+        .input-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .input-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .input-section::-webkit-scrollbar-thumb {
+            background: #0f3b5e;
+            border-radius: 10px;
+        }
+        
+        .results-section {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow: 0 25px 40px -15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        
+        h2 {
+            color: #0f3b5e;
+            margin-top: 0;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 2px solid rgba(15, 59, 94, 0.15);
+            font-size: 1.8em;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        
+        h3 {
+            color: #1e3a5f;
+            font-size: 1.3em;
+            margin: 28px 0 18px 0;
+            padding-left: 12px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .input-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #1e3a5f;
+            font-size: 0.95em;
+            letter-spacing: 0.3px;
+        }
+        
+        .input-with-unit {
+            position: relative;
+        }
+        
+        .unit {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5f6c80;
+            font-weight: 500;
+            font-size: 0.95em;
+            pointer-events: none;
+        }
+        
+        input[type="number"], select {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #e1e8f0;
+            border-radius: 16px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background-color: white;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            color: #1e293b;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        
+        input[type="number"]:hover, select:hover {
+            border-color: #98b9d9;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            border-color: #0f3b5e;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(15, 59, 94, 0.15);
+        }
+        
+        input[type="number"]:disabled, select:disabled {
+            background-color: #f8fafb;
+            color: #7a8a9c;
+            cursor: not-allowed;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(145deg, #f8fcff, #f0f7ff);
+            border-radius: 18px;
+            border: 1px solid #d9e8f5;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e1e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #0f3b5e;
+            margin-right: 12px;
+        }
+
+        .radio-option label {
+            margin-bottom: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 1em;
+        }
+
+        .radio-option.selected {
+            border-color: #0f3b5e;
+            background: linear-gradient(145deg, #eef5fc, #e8f2fc);
+            box-shadow: 0 4px 12px rgba(15, 59, 94, 0.15);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 18px 22px;
+            background: linear-gradient(145deg, #f8fcff, #f0f7ff);
+            border-radius: 18px;
+            border: 1px solid #d9e8f5;
+            transition: all 0.2s;
+        }
+        
+        .checkbox-group:hover {
+            background: linear-gradient(145deg, #f0f7ff, #e8f2fc);
+            border-color: #b8d4ed;
+        }
+        
+        .checkbox-group input {
+            margin-right: 18px;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #0f3b5e;
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 1.05em;
+        }
+
+        .profile-card {
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .profile-card.guaranteed {
+            background: linear-gradient(145deg, #e8f5e9, #f1f8f4);
+            border-color: #4caf50;
+        }
+
+        .profile-card.conservative {
+            background: linear-gradient(145deg, #e3f2fd, #f0f7ff);
+            border-color: #2196f3;
+        }
+
+        .profile-card.prudent {
+            background: linear-gradient(145deg, #fff3e0, #fff8f0);
+            border-color: #ff9800;
+        }
+
+        .profile-card.growth {
+            background: linear-gradient(145deg, #fce4ec, #fff0f5);
+            border-color: #e91e63;
+        }
+
+        .profile-card.aggressive {
+            background: linear-gradient(145deg, #ffebee, #fff5f5);
+            border-color: #f44336;
+        }
+
+        .profile-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #5f6c80;
+        }
+
+        .profile-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-detail-label {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .profile-detail-value {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #1e3a5f;
+        }
+        
+        .info-box {
+            background: linear-gradient(145deg, #e8f4f8, #d4ebf5);
+            border: 1px solid #a8d5e6;
+            border-left: 4px solid #2196F3;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .info-box h4 {
+            color: #0d47a1;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .info-box p {
+            color: #1565c0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+        
+        .info-box strong {
+            color: #0d47a1;
+            font-weight: 600;
+        }
+        
+        .warning-box {
+            background: linear-gradient(145deg, #fff8e1, #fff3cd);
+            border: 1px solid #ffe082;
+            border-left: 4px solid #ff9800;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .warning-box h4 {
+            color: #e65100;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        
+        .warning-box p {
+            color: #f57c00;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: linear-gradient(145deg, #f3e5f5, #fce4ec);
+            border: 1px solid #ce93d8;
+            border-left: 4px solid #9c27b0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .highlight-box h4 {
+            color: #6a1b9a;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .highlight-box p {
+            color: #7b1fa2;
+            font-size: 1.05em;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 18px;
+            margin-top: 32px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 20px;
+            border: none;
+            border-radius: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #simulateBtn {
+            background: linear-gradient(145deg, #1e3a5f, #0f3b5e);
+            color: white;
+            box-shadow: 0 10px 20px -8px rgba(15, 59, 94, 0.4);
+        }
+        
+        #simulateBtn:hover:not(:disabled) {
+            background: linear-gradient(145deg, #1a2f4f, #0a2f4f);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -8px rgba(15, 59, 94, 0.5);
+        }
+        
+        #resetBtn {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 10px 20px -8px rgba(192, 57, 43, 0.4);
+        }
+        
+        #resetBtn:hover:not(:disabled) {
+            background: linear-gradient(145deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -8px rgba(192, 57, 43, 0.5);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #fafcff);
+            border-radius: 20px;
+            padding: 24px 20px;
+            border: 1px solid #eaf0f8;
+            box-shadow: 0 10px 20px -10px rgba(0, 20, 40, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result-card.highlight {
+            background: linear-gradient(145deg, #e8f5e9, #f1f8f4);
+            border: 2px solid #4caf50;
+        }
+        
+        .result-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #3498db, #1e3a5f);
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .result-card.highlight::after {
+            background: linear-gradient(to bottom, #4caf50, #388e3c);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .result-card h3 {
+            margin: 0 0 10px 0;
+            padding: 0;
+            border: none;
+            color: #2c3e50;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .result-value {
+            font-size: 1.9em;
+            font-weight: 700;
+            color: #0f3b5e;
+            margin: 8px 0;
+            line-height: 1.2;
+            letter-spacing: -0.3px;
+        }
+        
+        .result-card.highlight .result-value {
+            color: #2e7d32;
+        }
+        
+        .result-detail {
+            color: #5f6c80;
+            font-size: 0.8em;
+            line-height: 1.4;
+            border-top: 1px solid #eef2f6;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .chart-wrapper {
+            background: white;
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 20px 35px -15px rgba(0, 0, 0, 0.15);
+            border: 1px solid #ecf3fa;
+            transition: all 0.3s;
+        }
+        
+        .chart-wrapper:hover {
+            box-shadow: 0 25px 45px -15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #0f3b5e;
+            margin-bottom: 20px;
+            padding-left: 15px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .simulation-summary {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+            padding: 24px;
+            background: linear-gradient(145deg, #f8fbff, #eef5fc);
+            border-radius: 20px;
+            border: 1px solid #d9e8f5;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 16px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .summary-label {
+            font-size: 0.85em;
+            color: #5f6c80;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #0f3b5e;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 28px;
+            margin-top: 20px;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #0f3b5e;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #c0392b;
+            font-weight: 600;
+            padding: 18px 22px;
+            background: #fdedec;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 6px solid #c0392b;
+        }
+        
+        .success {
+            color: #27ae60;
+            font-weight: 600;
+            padding: 18px 22px;
+            background: #eafaf1;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            display: none;
+            border-left: 6px solid #27ae60;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 6px;
+            color: #3498db;
+            cursor: help;
+        }
+        
+        .info-icon {
+            font-size: 0.85em;
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 320px;
+            background: #1e2b3a;
+            color: white;
+            border-radius: 12px;
+            padding: 15px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 150%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            font-weight: normal;
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            bottom: 170%;
+        }
+        
+        .explanation {
+            background: linear-gradient(145deg, #ffffff, #f8fcff);
+            border-radius: 28px;
+            padding: 40px;
+            margin-top: 60px;
+            border: 1px solid #dfeaf5;
+            box-shadow: 0 20px 30px -10px rgba(0, 20, 40, 0.1);
+            border-left: 8px solid #9b59b6;
+        }
+        
+        .explanation h3 {
+            color: #0f3b5e;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            font-weight: 600;
+            border: none;
+            padding: 0;
+        }
+        
+        .explanation ul {
+            padding-left: 25px;
+            margin: 20px 0;
+        }
+        
+        .explanation li {
+            margin-bottom: 12px;
+            line-height: 1.7;
+            color: #2c3e50;
+        }
+        
+        .credits {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            color: #5f6c80;
+            font-size: 1.1em;
+            border-top: 1px solid #d9e2ec;
+            background: rgba(255,255,255,0.5);
+            border-radius: 18px;
+        }
+        
+        @media (max-width: 1400px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                position: static;
+                max-height: none;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .simulation-summary {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .simulation-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💼 Simulatore Previdenza Complementare Pro</h1>
+            <p class="subtitle">Analisi Monte Carlo completa con capitale iniziale, profili di rischio e proiezione pensionistica personalizzata</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="input-section">
+                <h2>⚙️ Configurazione Piano Pensionistico</h2>
+                
+                <div class="error" id="errorMessage"></div>
+                <div class="success" id="successMessage"></div>
+                
+                <h3>👤 Dati Anagrafici</h3>
+                
+                <div class="input-group">
+                    <label>
+                        Età attuale
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">La tua età attuale in anni</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="currentAge" min="18" max="67" value="30">
+                        <span class="unit">anni</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Sesso</label>
+                    <select id="gender">
+                        <option value="M">Maschile</option>
+                        <option value="F">Femminile</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        Età pensionabile
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Età prevista per il pensionamento (default 67 anni)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="retirementAge" min="60" max="70" value="67">
+                        <span class="unit">anni</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        Periodo di detenzione post-pensionamento
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Anni aggiuntivi in cui mantieni l'investimento dopo il pensionamento</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="postRetirementYears" min="0" max="30" value="0">
+                        <span class="unit">anni</span>
+                    </div>
+                </div>
+                
+                <h3>💰 Situazione Economica Attuale</h3>
+
+                <div class="input-group">
+                    <label>
+                        Capitale già accumulato nel fondo
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Montante attualmente presente nel tuo fondo pensione (se già iscritto)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="initialCapital" min="0" max="500000" step="1000" value="0">
+                        <span class="unit">€</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        RAL (Reddito Annuo Lordo)
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Il tuo stipendio annuo lordo attuale</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="annualSalary" min="10000" max="200000" step="1000" value="35000">
+                        <span class="unit">€</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        TFR annuale (automatico)
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Calcolato come RAL / 13.5 (quota TFR destinabile alla previdenza)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="tfrAnnual" disabled>
+                        <span class="unit">€</span>
+                    </div>
+                </div>
+                
+                <h3>📊 Contributi alla Previdenza</h3>
+                
+                <div class="input-group">
+                    <label>
+                        Contributo datoriale
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Percentuale sulla RAL che il datore versa al fondo (default 1.5%)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="employerContribution" min="0" max="10" step="0.1" value="1.5">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        Contributo volontario dipendente (obbligatorio)
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Percentuale sulla RAL che versi obbligatoriamente (default 0.5%)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="mandatoryEmployeeContribution" min="0" max="10" step="0.1" value="0.5">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useMaxDeductible" checked>
+                    <label>
+                        Versa il massimo deducibile fiscalmente
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Sfrutta il limite di 5.164€ annui deducibili dal reddito imponibile</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <div class="info-box" id="contributionInfo">
+                    <h4>💡 Calcolo Contributi Annuali</h4>
+                    <p><strong>TFR:</strong> <span id="infoTFR">-</span></p>
+                    <p><strong>Contributo datoriale:</strong> <span id="infoEmployer">-</span></p>
+                    <p><strong>Contributo obbligatorio:</strong> <span id="infoMandatory">-</span></p>
+                    <p><strong>Contributo volontario aggiuntivo:</strong> <span id="infoAdditional">-</span></p>
+                    <p><strong>Totale annuo:</strong> <span id="infoTotal">-</span></p>
+                </div>
+                
+                <h3>📈 Profilo di Rischio/Rendimento</h3>
+
+                <div class="radio-group">
+                    <div class="radio-option" data-profile="predefined">
+                        <input type="radio" id="profilePredefined" name="riskProfile" value="predefined" checked>
+                        <label for="profilePredefined">🎯 Usa profili predefiniti (consigliato)</label>
+                    </div>
+                    <div class="radio-option" data-profile="custom">
+                        <input type="radio" id="profileCustom" name="riskProfile" value="custom">
+                        <label for="profileCustom">🔧 Personalizza rendimento e volatilità</label>
+                    </div>
+                </div>
+
+                <div id="predefinedProfilesSection">
+                    <div class="input-group">
+                        <label>Seleziona il profilo di investimento</label>
+                        <select id="investmentProfile">
+                            <option value="guaranteed">🛡️ Garantito - Capitale protetto</option>
+                            <option value="conservative">🏦 Conservativo - Rischio molto basso</option>
+                            <option value="prudent">⚖️ Prudente - Rischio moderato</option>
+                            <option value="growth" selected>📈 Crescita - Rischio medio</option>
+                            <option value="aggressive">🚀 Aggressivo - Rischio elevato</option>
+                        </select>
+                    </div>
+
+                    <div id="profileCard" class="profile-card growth">
+                        <div class="profile-details">
+                            <div class="profile-detail-item">
+                                <div class="profile-detail-label">Rendimento Atteso</div>
+                                <div class="profile-detail-value" id="profileReturn">6.0%</div>
+                            </div>
+                            <div class="profile-detail-item">
+                                <div class="profile-detail-label">Volatilità</div>
+                                <div class="profile-detail-value" id="profileVolatility">9.0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="customProfileSection" style="display: none;">
+                    <div class="input-group">
+                        <label>
+                            Rendimento annuo atteso
+                            <span class="tooltip">
+                                <span class="info-icon">i</span>
+                                <span class="tooltiptext">Rendimento medio annuo previsto (tipico 4-7% per fondi bilanciati)</span>
+                            </span>
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" id="expectedReturn" min="-10" max="20" step="0.1" value="6.0">
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>
+                            Volatilità annua
+                            <span class="tooltip">
+                                <span class="info-icon">i</span>
+                                <span class="tooltiptext">Deviazione standard dei rendimenti (tipico 8-15% per fondi bilanciati)</span>
+                            </span>
+                        </label>
+                        <div class="input-with-unit">
+                            <input type="number" id="volatility" min="0" max="50" step="0.1" value="9.0">
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>💼 Altri Parametri</h3>
+
+                <div class="input-group">
+                    <label>
+                        Costi annui del fondo
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Costi di gestione annui (TER) del fondo pensione (tipico 0.3-0.8%)</span>
+                        </span>
+                    </label>
+                    <div class="input-with-unit">
+                        <input type="number" id="fundCosts" min="0" max="3" step="0.05" value="0.5">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        Tassazione finale
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Aliquota fiscale sulla prestazione pensionistica (ridotta in base agli anni di adesione)</span>
+                        </span>
+                    </label>
+                    <select id="taxation">
+                        <option value="0.15">15% (oltre 15 anni)</option>
+                        <option value="0.123">12.3% (oltre 25 anni)</option>
+                        <option value="0.09" selected>9% (oltre 35 anni - massima riduzione)</option>
+                    </select>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="adjustInflation" checked>
+                    <label>
+                        Adeguamento contributi all'inflazione (2% annuo)
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">I contributi aumentano del 2% ogni anno per mantenere il potere d'acquisto</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <div class="input-group">
+                    <label>
+                        Numero di simulazioni Monte Carlo
+                        <span class="tooltip">
+                            <span class="info-icon">i</span>
+                            <span class="tooltiptext">Più simulazioni = risultati più accurati (consigliato 10.000)</span>
+                        </span>
+                    </label>
+                    <input type="number" id="simulations" min="1000" max="20000" step="1000" value="10000">
+                </div>
+                
+                <div class="button-group">
+                    <button id="simulateBtn">
+                        <span style="font-size:1.3em;">🎲</span> Simula Pensione
+                    </button>
+                    <button id="resetBtn">
+                        <span style="font-size:1.3em;">🔄</span> Reset
+                    </button>
+                </div>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <p style="font-size:1.2em; font-weight:500;">Elaborazione in corso...</p>
+                    <p>Simulazione di <span id="simCount">10.000</span> scenari pensionistici</p>
+                </div>
+            </div>
+            
+            <div class="results-section">
+                <h2>📊 Risultati della Simulazione Pensionistica</h2>
+                
+                <div class="simulation-summary">
+                    <div class="summary-item">
+                        <div class="summary-label">Capitale iniziale</div>
+                        <div class="summary-value" id="summaryInitial">-</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Anni accumulo</div>
+                        <div class="summary-value" id="summaryYears">-</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Contributo annuo</div>
+                        <div class="summary-value" id="summaryAnnual">-</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Risparmio fiscale</div>
+                        <div class="summary-value" id="summaryTaxSavings">-</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Profilo rischio</div>
+                        <div class="summary-value" id="summaryProfile">-</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" id="initialCapitalInfo" style="display: none;">
+                    <h4>🎯 Impatto Capitale Iniziale</h4>
+                    <p id="initialCapitalText">-</p>
+                </div>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>Contributi Totali Versati</h3>
+                        <div class="result-value" id="totalContributions">-</div>
+                        <div class="result-detail">Somma di TFR + datoriale + dipendente</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Risparmio Fiscale Totale</h3>
+                        <div class="result-value" id="totalTaxSavings">-</div>
+                        <div class="result-detail">Deduzioni IRPEF cumulate nel tempo</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Costi Fondo Pagati</h3>
+                        <div class="result-value" id="totalFundCosts">-</div>
+                        <div class="result-detail">Costi di gestione annui cumulati</div>
+                    </div>
+                    
+                    <div class="result-card highlight">
+                        <h3>Montante Finale Mediano</h3>
+                        <div class="result-value" id="medianFinal">-</div>
+                        <div class="result-detail">50% degli scenari supera questo valore</div>
+                    </div>
+                    
+                    <div class="result-card highlight">
+                        <h3>Montante Finale Medio</h3>
+                        <div class="result-value" id="meanFinal">-</div>
+                        <div class="result-detail">Media matematica di tutti gli scenari</div>
+                    </div>
+                    
+                    <div class="result-card highlight">
+                        <h3>Rendita Mensile Stimata</h3>
+                        <div class="result-value" id="monthlyPension">-</div>
+                        <div class="result-detail">Pensione integrativa mensile (stima 4%)</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Intervallo Confidenza 95%</h3>
+                        <div class="result-value" style="font-size: 1.3em;" id="confidence95">-</div>
+                        <div class="result-detail">Range in cui cade il 95% dei risultati</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Drawdown Mediano</h3>
+                        <div class="result-value" id="medianDrawdown">-</div>
+                        <div class="result-detail">Massima perdita percentuale mediana</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Probabilità di Perdita</h3>
+                        <div class="result-value" id="lossProbability">-</div>
+                        <div class="result-detail">Rischio di capitale finale &lt; versato</div>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <div class="chart-title">📈 Evoluzione Montante Pensionistico - 4 Scenari</div>
+                        <div class="chart-container">
+                            <canvas id="capitalChart"></canvas>
+                        </div>
+                        <p style="color:#5f6c80; margin-top:15px; font-size:0.95em; text-align:center;">
+                            <strong>Linea nera tratteggiata:</strong> contributi cumulati versati. Le linee colorate mostrano l'evoluzione del montante al netto dei costi.
+                        </p>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <div class="chart-title">📊 Distribuzione del Montante Finale al Pensionamento</div>
+                        <div class="chart-container">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-wrapper">
+                        <div class="chart-title">📉 Distribuzione dei Massimi Drawdown</div>
+                        <div class="chart-container">
+                            <canvas id="drawdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3>🎯 Profili di Investimento Spiegati</h3>
+            <ul>
+                <li><strong>🛡️ Garantito (2% rend., 1% vol.):</strong> Capitale protetto, rendimenti molto bassi ma sicuri. Ideale per chi è vicino al pensionamento.</li>
+                <li><strong>🏦 Conservativo (3% rend., 2% vol.):</strong> Rischio minimo, investimento principalmente in obbligazioni di qualità. Perdite rare e contenute.</li>
+                <li><strong>⚖️ Prudente (4% rend., 5% vol.):</strong> Bilanciato difensivo con prevalenza obbligazionaria. Adatto a chi ha 10-15 anni al pensionamento.</li>
+                <li><strong>📈 Crescita (6% rend., 9% vol.):</strong> Bilanciato 50/50 azioni/obbligazioni. Profilo equilibrato per chi ha 15+ anni all'obiettivo.</li>
+                <li><strong>🚀 Aggressivo (8% rend., 12% vol.):</strong> Prevalenza azionaria per massimizzare i rendimenti. Consigliato solo per orizzonti lunghi (20+ anni).</li>
+            </ul>
+            <p style="margin-top:20px; padding: 15px; background: #eef5fc; border-radius: 12px; border-left: 4px solid #3498db;">
+                <strong>💡 Regola d'oro:</strong> Più sei giovane e lontano dal pensionamento, più puoi permetterti un profilo aggressivo. Man mano che ti avvicini all'età pensionabile, riduci gradualmente il rischio spostando verso profili più conservativi.
+            </p>
+        </div>
+        
+        <div class="credits">
+            <p><strong>Simulatore Previdenza Complementare v2.0</strong></p>
+            <p>Strumento professionale avanzato per la pianificazione pensionistica | Calcoli basati sulla normativa italiana vigente</p>
+        </div>
+    </div>
+
+    <script>
+        // Configurazione profili predefiniti
+        const INVESTMENT_PROFILES = {
+            guaranteed: { return: 2.0, volatility: 1.0, name: 'Garantito', icon: '🛡️' },
+            conservative: { return: 3.0, volatility: 2.0, name: 'Conservativo', icon: '🏦' },
+            prudent: { return: 4.0, volatility: 5.0, name: 'Prudente', icon: '⚖️' },
+            growth: { return: 6.0, volatility: 9.0, name: 'Crescita', icon: '📈' },
+            aggressive: { return: 8.0, volatility: 12.0, name: 'Aggressivo', icon: '🚀' }
+        };
+
+        // Configurazione
+        const CONFIG = {
+            MAX_DEDUCTIBLE: 5164,
+            DEFAULT_INFLATION: 0.02,
+            TFR_DIVISOR: 13.5,
+            AVERAGE_TAX_RATE: 0.30,
+            PENSION_CONVERSION_RATE: 0.04
+        };
+
+        // Elementi DOM
+        const elements = {
+            // Inputs
+            currentAge: document.getElementById('currentAge'),
+            gender: document.getElementById('gender'),
+            retirementAge: document.getElementById('retirementAge'),
+            postRetirementYears: document.getElementById('postRetirementYears'),
+            initialCapital: document.getElementById('initialCapital'),
+            annualSalary: document.getElementById('annualSalary'),
+            tfrAnnual: document.getElementById('tfrAnnual'),
+            employerContribution: document.getElementById('employerContribution'),
+            mandatoryEmployeeContribution: document.getElementById('mandatoryEmployeeContribution'),
+            useMaxDeductible: document.getElementById('useMaxDeductible'),
+            investmentProfile: document.getElementById('investmentProfile'),
+            expectedReturn: document.getElementById('expectedReturn'),
+            volatility: document.getElementById('volatility'),
+            fundCosts: document.getElementById('fundCosts'),
+            taxation: document.getElementById('taxation'),
+            adjustInflation: document.getElementById('adjustInflation'),
+            simulations: document.getElementById('simulations'),
+            
+            // Profile sections
+            profilePredefined: document.getElementById('profilePredefined'),
+            profileCustom: document.getElementById('profileCustom'),
+            predefinedProfilesSection: document.getElementById('predefinedProfilesSection'),
+            customProfileSection: document.getElementById('customProfileSection'),
+            profileCard: document.getElementById('profileCard'),
+            profileReturn: document.getElementById('profileReturn'),
+            profileVolatility: document.getElementById('profileVolatility'),
+            
+            // Info boxes
+            infoTFR: document.getElementById('infoTFR'),
+            infoEmployer: document.getElementById('infoEmployer'),
+            infoMandatory: document.getElementById('infoMandatory'),
+            infoAdditional: document.getElementById('infoAdditional'),
+            infoTotal: document.getElementById('infoTotal'),
+            initialCapitalInfo: document.getElementById('initialCapitalInfo'),
+            initialCapitalText: document.getElementById('initialCapitalText'),
+            
+            // Summary
+            summaryInitial: document.getElementById('summaryInitial'),
+            summaryYears: document.getElementById('summaryYears'),
+            summaryAnnual: document.getElementById('summaryAnnual'),
+            summaryTaxSavings: document.getElementById('summaryTaxSavings'),
+            summaryProfile: document.getElementById('summaryProfile'),
+            
+            // Results
+            totalContributions: document.getElementById('totalContributions'),
+            totalTaxSavings: document.getElementById('totalTaxSavings'),
+            totalFundCosts: document.getElementById('totalFundCosts'),
+            medianFinal: document.getElementById('medianFinal'),
+            meanFinal: document.getElementById('meanFinal'),
+            monthlyPension: document.getElementById('monthlyPension'),
+            confidence95: document.getElementById('confidence95'),
+            medianDrawdown: document.getElementById('medianDrawdown'),
+            lossProbability: document.getElementById('lossProbability'),
+            
+            // Buttons
+            simulateBtn: document.getElementById('simulateBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            errorMessage: document.getElementById('errorMessage'),
+            successMessage: document.getElementById('successMessage'),
+            simCount: document.getElementById('simCount')
+        };
+        
+        // Grafici
+        let charts = {
+            capital: null,
+            distribution: null,
+            drawdown: null
+        };
+        
+        // Formattatori
+        const formatters = {
+            currency: new Intl.NumberFormat('it-IT', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }),
+            percent: new Intl.NumberFormat('it-IT', {
+                style: 'percent',
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 2
+            }),
+            number: new Intl.NumberFormat('it-IT')
+        };
+        
+        // Gestione switch profili
+        function setupProfileSwitch() {
+            const radioOptions = document.querySelectorAll('.radio-option');
+            
+            radioOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    
+                    radioOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    if (radio.value === 'predefined') {
+                        elements.predefinedProfilesSection.style.display = 'block';
+                        elements.customProfileSection.style.display = 'none';
+                    } else {
+                        elements.predefinedProfilesSection.style.display = 'none';
+                        elements.customProfileSection.style.display = 'block';
+                    }
+                });
+            });
+            
+            // Imposta stato iniziale
+            document.querySelector('.radio-option[data-profile="predefined"]').classList.add('selected');
+        }
+        
+        // Aggiorna card profilo
+        function updateProfileCard() {
+            const profile = elements.investmentProfile.value;
+            const profileData = INVESTMENT_PROFILES[profile];
+            
+            elements.profileCard.className = 'profile-card ' + profile;
+            elements.profileReturn.textContent = profileData.return.toFixed(1) + '%';
+            elements.profileVolatility.textContent = profileData.volatility.toFixed(1) + '%';
+        }
+        
+        // Ottieni parametri rendimento/volatilità
+        function getRiskParameters() {
+            if (elements.profilePredefined.checked) {
+                const profile = elements.investmentProfile.value;
+                const profileData = INVESTMENT_PROFILES[profile];
+                return {
+                    expectedReturn: profileData.return / 100,
+                    volatility: profileData.volatility / 100,
+                    profileName: profileData.icon + ' ' + profileData.name
+                };
+            } else {
+                const ret = parseFloat(elements.expectedReturn.value) / 100;
+                const vol = parseFloat(elements.volatility.value) / 100;
+                return {
+                    expectedReturn: ret,
+                    volatility: vol,
+                    profileName: `${(ret * 100).toFixed(1)}% / ${(vol * 100).toFixed(1)}%`
+                };
+            }
+        }
+        
+        // Calcola TFR
+        function calculateTFR() {
+            const salary = parseFloat(elements.annualSalary.value) || 0;
+            const tfr = salary / CONFIG.TFR_DIVISOR;
+            elements.tfrAnnual.value = Math.round(tfr);
+            return tfr;
+        }
+        
+        // Calcola contributi
+        function calculateContributions() {
+            const salary = parseFloat(elements.annualSalary.value) || 0;
+            const tfr = calculateTFR();
+            const employerPct = parseFloat(elements.employerContribution.value) / 100 || 0;
+            const mandatoryPct = parseFloat(elements.mandatoryEmployeeContribution.value) / 100 || 0;
+            const useMaxDed = elements.useMaxDeductible.checked;
+            
+            const employerContrib = salary * employerPct;
+            const mandatoryContrib = salary * mandatoryPct;
+            
+            let additionalContrib = 0;
+            if (useMaxDed) {
+                const alreadyDeductible = employerContrib + mandatoryContrib;
+                additionalContrib = Math.max(0, CONFIG.MAX_DEDUCTIBLE - alreadyDeductible);
+            }
+            
+            const totalAnnual = tfr + employerContrib + mandatoryContrib + additionalContrib;
+            
+            elements.infoTFR.textContent = formatters.currency.format(tfr);
+            elements.infoEmployer.textContent = formatters.currency.format(employerContrib);
+            elements.infoMandatory.textContent = formatters.currency.format(mandatoryContrib);
+            elements.infoAdditional.textContent = formatters.currency.format(additionalContrib);
+            elements.infoTotal.textContent = formatters.currency.format(totalAnnual);
+            
+            return {
+                tfr,
+                employerContrib,
+                mandatoryContrib,
+                additionalContrib,
+                totalAnnual,
+                deductible: Math.min(employerContrib + mandatoryContrib + additionalContrib, CONFIG.MAX_DEDUCTIBLE)
+            };
+        }
+        
+        // Aggiorna info
+        function updateInfo() {
+            calculateContributions();
+            updateProfileCard();
+        }
+        
+        // Validazione
+        function validateInputs() {
+            const currentAge = parseInt(elements.currentAge.value);
+            const retirementAge = parseInt(elements.retirementAge.value);
+            const salary = parseFloat(elements.annualSalary.value);
+            const initialCapital = parseFloat(elements.initialCapital.value) || 0;
+            
+            if (currentAge >= retirementAge) {
+                showMessage('error', '❌ L\'età pensionabile deve essere maggiore dell\'età attuale');
+                return false;
+            }
+            
+            if (currentAge < 18 || currentAge > 67) {
+                showMessage('error', '❌ L\'età attuale deve essere tra 18 e 67 anni');
+                return false;
+            }
+            
+            if (retirementAge < 60 || retirementAge > 70) {
+                showMessage('error', '❌ L\'età pensionabile deve essere tra 60 e 70 anni');
+                return false;
+            }
+            
+            if (salary < 10000 || salary > 500000) {
+                showMessage('error', '❌ La RAL deve essere tra 10.000€ e 500.000€');
+                return false;
+            }
+
+            if (initialCapital < 0 || initialCapital > 1000000) {
+                showMessage('error', '❌ Il capitale iniziale deve essere tra 0€ e 1.000.000€');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Mostra messaggio
+        function showMessage(type, message) {
+            elements.errorMessage.style.display = 'none';
+            elements.successMessage.style.display = 'none';
+            
+            if (type === 'error') {
+                elements.errorMessage.textContent = message;
+                elements.errorMessage.style.display = 'block';
+                elements.errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else if (type === 'success') {
+                elements.successMessage.textContent = message;
+                elements.successMessage.style.display = 'block';
+            }
+        }
+        
+        // Random normale
+        function getNormalRandom() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+        
+        // Percentile
+        function percentile(arr, p) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const index = (p / 100) * (sorted.length - 1);
+            const lower = Math.floor(index);
+            const upper = Math.ceil(index);
+            const weight = index % 1;
+            
+            if (lower === upper) return sorted[lower];
+            return sorted[lower] * (1 - weight) + sorted[upper] * weight;
+        }
+        
+        // Simulazione
+        function runPensionSimulation() {
+            const currentAge = parseInt(elements.currentAge.value);
+            const retirementAge = parseInt(elements.retirementAge.value);
+            const postRetYears = parseInt(elements.postRetirementYears.value) || 0;
+            const initialCapital = parseFloat(elements.initialCapital.value) || 0;
+            const riskParams = getRiskParameters();
+            const fundCosts = parseFloat(elements.fundCosts.value) / 100;
+            const taxation = parseFloat(elements.taxation.value);
+            const adjustInflation = elements.adjustInflation.checked;
+            const simulations = parseInt(elements.simulations.value);
+            
+            const yearsToRetirement = retirementAge - currentAge;
+            const totalYears = yearsToRetirement + postRetYears;
+            
+            const contrib = calculateContributions();
+            const netReturn = riskParams.expectedReturn - fundCosts;
+            
+            const allPaths = [];
+            const finalValues = [];
+            const maxDrawdowns = [];
+            let totalContributionsSum = 0;
+            let totalTaxSavingsSum = 0;
+            
+            for (let sim = 0; sim < simulations; sim++) {
+                let capital = initialCapital; // Parte dal capitale già accumulato
+                const path = [capital];
+                let peak = capital > 0 ? capital : 1;
+                let maxDrawdown = 0;
+                let contributionsAccum = 0;
+                let taxSavingsAccum = 0;
+                
+                // Fase accumulo
+                for (let year = 0; year < yearsToRetirement; year++) {
+                    let yearlyContrib = contrib.totalAnnual;
+                    if (adjustInflation) {
+                        yearlyContrib *= Math.pow(1 + CONFIG.DEFAULT_INFLATION, year);
+                    }
+                    
+                    capital += yearlyContrib;
+                    contributionsAccum += yearlyContrib;
+                    
+                    let deductible = Math.min(
+                        contrib.employerContrib + contrib.mandatoryContrib + contrib.additionalContrib,
+                        CONFIG.MAX_DEDUCTIBLE
+                    );
+                    if (adjustInflation) {
+                        deductible *= Math.pow(1 + CONFIG.DEFAULT_INFLATION, year);
+                    }
+                    taxSavingsAccum += deductible * CONFIG.AVERAGE_TAX_RATE;
+                    
+                    const randomReturn = netReturn + riskParams.volatility * getNormalRandom();
+                    capital *= (1 + randomReturn);
+                    
+                    if (capital > peak) {
+                        peak = capital;
+                    } else if (peak > 0) {
+                        const drawdown = (peak - capital) / peak;
+                        maxDrawdown = Math.max(maxDrawdown, drawdown);
+                    }
+                    
+                    path.push(capital);
+                }
+                
+                // Fase post-pensionamento
+                for (let year = 0; year < postRetYears; year++) {
+                    const randomReturn = netReturn + riskParams.volatility * getNormalRandom();
+                    capital *= (1 + randomReturn);
+                    
+                    if (capital > peak) {
+                        peak = capital;
+                    } else if (peak > 0) {
+                        const drawdown = (peak - capital) / peak;
+                        maxDrawdown = Math.max(maxDrawdown, drawdown);
+                    }
+                    
+                    path.push(capital);
+                }
+                
+                // Tassazione
+                const taxableBase = initialCapital + contributionsAccum;
+                const gain = capital - taxableBase;
+                if (gain > 0) {
+                    capital -= gain * taxation;
+                }
+                
+                if (sim === 0) {
+                    totalContributionsSum = contributionsAccum;
+                    totalTaxSavingsSum = taxSavingsAccum;
+                }
+                
+                finalValues.push(capital);
+                maxDrawdowns.push(maxDrawdown);
+                allPaths.push(path);
+            }
+            
+            return {
+                allPaths,
+                finalValues,
+                maxDrawdowns,
+                totalYears,
+                yearsToRetirement,
+                totalContributions: totalContributionsSum,
+                totalTaxSavings: totalTaxSavingsSum,
+                annualContribution: contrib.totalAnnual,
+                initialCapital,
+                profileName: riskParams.profileName
+            };
+        }
+        
+        // Seleziona percorsi rappresentativi
+        function selectRepresentativePaths(results) {
+            const percentiles = [10, 50, 75, 90];
+            const selectedPaths = [];
+            
+            percentiles.forEach(p => {
+                const targetValue = percentile(results.finalValues, p);
+                
+                let closestIndex = 0;
+                let closestDiff = Math.abs(results.finalValues[0] - targetValue);
+                
+                for (let i = 1; i < results.finalValues.length; i++) {
+                    const diff = Math.abs(results.finalValues[i] - targetValue);
+                    if (diff < closestDiff) {
+                        closestDiff = diff;
+                        closestIndex = i;
+                    }
+                }
+                
+                selectedPaths.push({
+                    percentile: p,
+                    path: results.allPaths[closestIndex],
+                    finalValue: results.finalValues[closestIndex]
+                });
+            });
+            
+            return selectedPaths;
+        }
+        
+        // Aggiorna risultati
+        function updateResults(results) {
+            const medianFinal = percentile(results.finalValues, 50);
+            const meanFinal = results.finalValues.reduce((a, b) => a + b, 0) / results.finalValues.length;
+            const lower95 = percentile(results.finalValues, 2.5);
+            const upper95 = percentile(results.finalValues, 97.5);
+            const medianDD = percentile(results.maxDrawdowns, 50);
+            const taxableBase = results.initialCapital + results.totalContributions;
+            const lossCount = results.finalValues.filter(v => v < taxableBase).length;
+            const lossProbability = lossCount / results.finalValues.length;
+            
+            const monthlyPension = (medianFinal * CONFIG.PENSION_CONVERSION_RATE) / 12;
+            
+            const fundCostsPct = parseFloat(elements.fundCosts.value) / 100;
+            const avgCapital = (results.initialCapital + results.totalContributions) / 2;
+            const totalFundCosts = avgCapital * fundCostsPct * results.yearsToRetirement;
+            
+            elements.totalContributions.textContent = formatters.currency.format(results.totalContributions);
+            elements.totalTaxSavings.textContent = formatters.currency.format(results.totalTaxSavings);
+            elements.totalFundCosts.textContent = formatters.currency.format(totalFundCosts);
+            elements.medianFinal.textContent = formatters.currency.format(medianFinal);
+            elements.meanFinal.textContent = formatters.currency.format(meanFinal);
+            elements.monthlyPension.textContent = formatters.currency.format(monthlyPension);
+            elements.confidence95.textContent = 
+                `${formatters.currency.format(lower95)} - ${formatters.currency.format(upper95)}`;
+            elements.medianDrawdown.textContent = formatters.percent.format(medianDD);
+            elements.lossProbability.textContent = formatters.percent.format(lossProbability);
+            
+            // Summary
+            elements.summaryInitial.textContent = formatters.currency.format(results.initialCapital);
+            elements.summaryYears.textContent = results.yearsToRetirement;
+            elements.summaryAnnual.textContent = formatters.currency.format(results.annualContribution);
+            elements.summaryTaxSavings.textContent = formatters.currency.format(results.annualContribution * CONFIG.AVERAGE_TAX_RATE);
+            elements.summaryProfile.textContent = results.profileName;
+
+            // Info capitale iniziale
+            if (results.initialCapital > 0) {
+                const finalWithoutInitial = medianFinal - results.initialCapital * Math.pow(1 + (getRiskParameters().expectedReturn - parseFloat(elements.fundCosts.value) / 100), results.yearsToRetirement);
+                const contributionValue = medianFinal - finalWithoutInitial;
+                
+                elements.initialCapitalInfo.style.display = 'block';
+                elements.initialCapitalText.textContent = 
+                    `Partendo da ${formatters.currency.format(results.initialCapital)}, il tuo capitale iniziale dovrebbe crescere fino a circa ${formatters.currency.format(medianFinal - contributionValue)} al pensionamento. I contributi futuri aggiungeranno altri ${formatters.currency.format(contributionValue)} al montante finale.`;
+            } else {
+                elements.initialCapitalInfo.style.display = 'none';
+            }
+            
+            return results;
+        }
+        
+        // Crea grafici
+        function createCharts(results) {
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            
+            const selectedPaths = selectRepresentativePaths(results);
+            
+            const timeLabels = [];
+            for (let i = 0; i <= results.totalYears; i++) {
+                if (i === results.yearsToRetirement) {
+                    timeLabels.push('Pensionamento');
+                } else {
+                    timeLabels.push(`Anno ${i}`);
+                }
+            }
+            
+            // Contributi cumulati (include capitale iniziale nella prima posizione)
+            const cumulativeContributions = [results.initialCapital];
+            const contrib = calculateContributions();
+            let cumul = results.initialCapital;
+            
+            for (let year = 0; year < results.yearsToRetirement; year++) {
+                let yearlyContrib = contrib.totalAnnual;
+                if (elements.adjustInflation.checked) {
+                    yearlyContrib *= Math.pow(1 + CONFIG.DEFAULT_INFLATION, year);
+                }
+                cumul += yearlyContrib;
+                cumulativeContributions.push(cumul);
+            }
+            
+            const postRetYears = parseInt(elements.postRetirementYears.value) || 0;
+            for (let year = 0; year < postRetYears; year++) {
+                cumulativeContributions.push(cumul);
+            }
+            
+            // Dataset grafico capitale
+            const capitalDatasets = [];
+            const colors = [
+                { border: 'rgba(231, 76, 60, 1)', bg: 'rgba(231, 76, 60, 0.1)' },
+                { border: 'rgba(46, 204, 113, 1)', bg: 'rgba(46, 204, 113, 0.1)' },
+                { border: 'rgba(52, 152, 219, 1)', bg: 'rgba(52, 152, 219, 0.1)' },
+                { border: 'rgba(230, 126, 34, 1)', bg: 'rgba(230, 126, 34, 0.1)' }
+            ];
+            const labels = ['10° Percentile', '50° Percentile', '75° Percentile', '90° Percentile'];
+            
+            selectedPaths.forEach((scenario, i) => {
+                capitalDatasets.push({
+                    label: labels[i],
+                    data: scenario.path,
+                    borderColor: colors[i].border,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    fill: false,
+                    tension: 0.2,
+                    pointRadius: 0
+                });
+            });
+            
+            capitalDatasets.push({
+                label: '💰 Capitale Iniziale + Contributi',
+                data: cumulativeContributions,
+                borderColor: 'rgba(0, 0, 0, 0.9)',
+                backgroundColor: 'transparent',
+                borderWidth: 3,
+                borderDash: [10, 5],
+                fill: false,
+                tension: 0,
+                pointRadius: 0
+            });
+            
+            const capitalCtx = document.getElementById('capitalChart').getContext('2d');
+            charts.capital = new Chart(capitalCtx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: capitalDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatters.currency.format(context.raw)}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Anni',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Montante (€)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: value => formatters.currency.format(value)
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Istogrammi
+            const bins = 40;
+            
+            // Distribuzione finale
+            const minFinal = Math.min(...results.finalValues);
+            const maxFinal = Math.max(...results.finalValues);
+            const binWidth = (maxFinal - minFinal) / bins;
+            
+            const histogram = new Array(bins).fill(0);
+            results.finalValues.forEach(value => {
+                const binIndex = Math.min(Math.floor((value - minFinal) / binWidth), bins - 1);
+                histogram[binIndex]++;
+            });
+            
+            const histogramLabels = [];
+            for (let i = 0; i < bins; i++) {
+                const binStart = minFinal + i * binWidth;
+                histogramLabels.push(formatters.currency.format(binStart));
+            }
+            
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            charts.distribution = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: histogramLabels,
+                    datasets: [{
+                        label: 'Frequenza',
+                        data: histogram,
+                        backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Montante Finale (€)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: (value, index) => index % 8 === 0 ? histogramLabels[index] : ''
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Numero di Simulazioni',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Drawdown
+            const ddHistogram = new Array(bins).fill(0);
+            const minDD = Math.min(...results.maxDrawdowns);
+            const maxDD = Math.max(...results.maxDrawdowns);
+            const ddBinWidth = (maxDD - minDD) / bins;
+            
+            results.maxDrawdowns.forEach(value => {
+                const binIndex = Math.min(Math.floor((value - minDD) / ddBinWidth), bins - 1);
+                ddHistogram[binIndex]++;
+            });
+            
+            const ddLabels = [];
+            for (let i = 0; i < bins; i++) {
+                const binStart = minDD + i * ddBinWidth;
+                ddLabels.push(formatters.percent.format(binStart));
+            }
+            
+            const drawdownCtx = document.getElementById('drawdownChart').getContext('2d');
+            charts.drawdown = new Chart(drawdownCtx, {
+                type: 'bar',
+                data: {
+                    labels: ddLabels,
+                    datasets: [{
+                        label: 'Frequenza',
+                        data: ddHistogram,
+                        backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Massimo Drawdown (%)',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                callback: (value, index) => index % 8 === 0 ? ddLabels[index] : ''
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Numero di Simulazioni',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Event handlers
+        elements.simulateBtn.addEventListener('click', function() {
+            if (!validateInputs()) return;
+            
+            elements.simulateBtn.disabled = true;
+            elements.resetBtn.disabled = true;
+            elements.loadingIndicator.style.display = 'block';
+            const sims = parseInt(elements.simulations.value);
+            elements.simCount.textContent = formatters.number.format(sims);
+            showMessage('error', '');
+            
+            setTimeout(() => {
+                try {
+                    const results = runPensionSimulation();
+                    updateResults(results);
+                    createCharts(results);
+                    
+                    showMessage('success', '✅ Simulazione pensionistica completata con successo!');
+                    
+                    if (window.innerWidth <= 1400) {
+                        document.querySelector('.results-section').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }
+                } catch (error) {
+                    console.error('Errore simulazione:', error);
+                    showMessage('error', '❌ Errore durante la simulazione. Verifica i parametri.');
+                } finally {
+                    elements.loadingIndicator.style.display = 'none';
+                    elements.simulateBtn.disabled = false;
+                    elements.resetBtn.disabled = false;
+                }
+            }, 50);
+        });
+        
+        elements.resetBtn.addEventListener('click', function() {
+            elements.currentAge.value = 30;
+            elements.gender.value = 'M';
+            elements.retirementAge.value = 67;
+            elements.postRetirementYears.value = 0;
+            elements.initialCapital.value = 0;
+            elements.annualSalary.value = 35000;
+            elements.employerContribution.value = 1.5;
+            elements.mandatoryEmployeeContribution.value = 0.5;
+            elements.useMaxDeductible.checked = true;
+            elements.profilePredefined.checked = true;
+            elements.investmentProfile.value = 'growth';
+            elements.expectedReturn.value = 6.0;
+            elements.volatility.value = 9.0;
+            elements.fundCosts.value = 0.5;
+            elements.taxation.value = 0.09;
+            elements.adjustInflation.checked = true;
+            elements.simulations.value = 10000;
+            
+            elements.predefinedProfilesSection.style.display = 'block';
+            elements.customProfileSection.style.display = 'none';
+            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.radio-option[data-profile="predefined"]').classList.add('selected');
+            
+            updateInfo();
+            showMessage('error', '');
+            showMessage('success', '');
+            
+            Object.keys(elements).forEach(key => {
+                if ((key.startsWith('total') || key.startsWith('median') || key.startsWith('mean') || 
+                     key.startsWith('monthly') || key.startsWith('confidence') || key.startsWith('loss') ||
+                     key.startsWith('summary')) && elements[key].textContent !== undefined) {
+                    elements[key].textContent = '-';
+                }
+            });
+            
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+        });
+        
+        // Update listeners
+        elements.annualSalary.addEventListener('input', updateInfo);
+        elements.employerContribution.addEventListener('input', updateInfo);
+        elements.mandatoryEmployeeContribution.addEventListener('input', updateInfo);
+        elements.useMaxDeductible.addEventListener('change', updateInfo);
+        elements.investmentProfile.addEventListener('change', updateProfileCard);
+        
+        // Inizializzazione
+        window.addEventListener('DOMContentLoaded', function() {
+            setupProfileSwitch();
+            updateInfo();
+            
+            setTimeout(() => {
+                elements.simulateBtn.click();
+            }, 100);
+        });
+    </script>
+</body>
+</html>
